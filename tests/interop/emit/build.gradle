@@ -1,0 +1,6 @@
+plugins { id 'java'; id 'application' }
+group = "io.specodec"; version = "0.0.1"
+repositories { mavenCentral() }
+dependencies { implementation(files("runtime.jar")) }
+application { mainClass = "emit_java.Main" }
+java { sourceCompatibility = JavaVersion.VERSION_21; targetCompatibility = JavaVersion.VERSION_21 }
