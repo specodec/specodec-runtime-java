@@ -1,0 +1,11 @@
+{
+  "name": "specodec-java-interop-test",
+  "version": "0.0.1",
+  "type": "module",
+  "private": true,
+  "dependencies": {
+    "@typespec/compiler": "1.11.0",
+    "@specodec/typespec-emitter-core": "file:../../../typespec-emitter-core",
+    "@specodec/typespec-emitter-java": "file:../../../typespec-emitter-java"
+  }
+}
