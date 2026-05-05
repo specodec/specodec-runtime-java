@@ -46,7 +46,7 @@ const emitDir = join(__dir, 'emit');
 mkdirSync(emitDir, { recursive: true });
 execSync(`cp ${jar} ${emitDir}/runtime.jar`, { stdio: 'inherit' });
 
-const alltypesDir = join(emitDir, 'src', 'main', 'java', 'alltypes');
+const alltypesDir = join(emitDir, 'src', 'main', 'java', 'all_types');
 if (existsSync(alltypesDir)) rmSync(alltypesDir, { recursive: true });
 execSync(`cp -r ${EMIT_GEN} ${alltypesDir}`, { stdio: 'inherit' });
 

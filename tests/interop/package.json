@@ -5,7 +5,7 @@
   "private": true,
   "dependencies": {
     "@typespec/compiler": "1.11.0",
-    "@specodec/typespec-emitter-core": "file:../../../typespec-emitter-core",
-    "@specodec/typespec-emitter-java": "file:../../../typespec-emitter-java"
+    "@specodec/typespec-emitter-core": "^0.1.1",
+    "@specodec/typespec-emitter-java": "^0.1.2"
   }
 }

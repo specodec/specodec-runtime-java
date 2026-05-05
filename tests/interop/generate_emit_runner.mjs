@@ -100,7 +100,7 @@ for (const model of models) {
 const code = `package emit_java;
 
 import specodec.*;
-import alltypes.*;
+import all_types.*;
 
 public class Main {
     static String vecDir = System.getenv("VEC_DIR");
