@@ -46,9 +46,18 @@ const emitDir = join(__dir, 'emit');
 mkdirSync(emitDir, { recursive: true });
 execSync(`cp ${jar} ${emitDir}/runtime.jar`, { stdio: 'inherit' });
 
-const alltypesDir = join(emitDir, 'src', 'main', 'java', 'all_types');
-if (existsSync(alltypesDir)) rmSync(alltypesDir, { recursive: true });
-execSync(`cp -r ${EMIT_GEN} ${alltypesDir}`, { stdio: 'inherit' });
+// Organize generated Java files into package directories
+const srcBase = join(emitDir, 'src', 'main', 'java');
+mkdirSync(srcBase, { recursive: true });
+for (const f of readdirSync(EMIT_GEN).filter(f => f.endsWith('.java'))) {
+  const content = readFileSync(join(EMIT_GEN, f), 'utf-8');
+  const pm = content.match(/^package\s+(\S+);/m);
+  const pkgDir = pm ? pm[1].replace(/\./g, '/') : 'all_types';
+  const targetDir = join(srcBase, pkgDir);
+  mkdirSync(targetDir, { recursive: true });
+  writeFileSync(join(targetDir, f), content);
+}
+console.log('  ✓ Organized generated files into package directories');
 
 writeFileSync(join(emitDir, 'build.gradle'), `plugins { id 'java'; id 'application' }
 group = "io.specodec"; version = "0.0.1"

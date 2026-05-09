@@ -1,0 +1,14 @@
+build/
+.gradle/
+node_modules/
+__pycache__/
+*.class
+*.jar
+.cache/
+.DS_Store
+*.swp
+*~
+*.log
+*.swo
+.kotlin/
+!gradle-wrapper.jar

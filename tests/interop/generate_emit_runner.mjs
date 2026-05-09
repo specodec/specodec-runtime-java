@@ -9,8 +9,11 @@ const VEC_DIR = process.env.VEC_DIR || path.join(__dir, ".tests-cache", "vectors
 const manifestPath = path.join(VEC_DIR, "manifest.json");
 const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf-8"));
 
-const models = manifest.testModels || [];
+const models = [...(manifest.testModels || []), ...(manifest.testUnions || [])];
 const scalars = manifest.scalars || {};
+const testUnions = new Set(manifest.testUnions || []);
+function isUnionTest(name) { return testUnions.has(name); }
+function unionNameOf(testName) { return testName.replace(/_[^_]+$/, ''); }
 
 function toPascalCase(name) {
   let result = name.replace(/\./g, '_').replace(/-/g, '_');
@@ -58,6 +61,16 @@ for (const f of javaFiles) {
     modelClass[m[1]] = outerClass;
     if (pkg) modelPackage[m[1]] = pkg;
   }
+  for (const model of models) {
+    if (isUnionTest(model)) {
+      const uname = unionNameOf(model);
+      if (content.includes(uname + "Codec")) {
+        modelClass[uname] = outerClass;
+        if (pkg) modelPackage[uname] = pkg;
+        if (pkg) modelPackage[model] = pkg;
+      }
+    }
+  }
 }
 
 // --- Scalar test functions ---
@@ -93,7 +106,8 @@ for (const model of models) {
 }
 
 // --- Generate test file per namespace ---
-const baseOutDir = path.join(__dir, "emit", "src", "main", "java");
+const baseOutDir = path.join(__dir, "emit", "src", "main", "java", "emit_java");
+fs.mkdirSync(baseOutDir, { recursive: true });
 fs.mkdirSync(baseOutDir, { recursive: true });
 
 const nsOrder = Object.keys(nsGroups);
@@ -115,15 +129,16 @@ for (const [ns, nsModels] of Object.entries(nsGroups)) {
   let modelCalls = '';
 
   for (const model of nsModels) {
-    const outerClass = modelClass[model] || 'AllTypesTypes';
+    const codecName = isUnionTest(model) ? unionNameOf(model) : model;
+    const outerClass = modelClass[codecName] || 'AllTypesTypes';
     modelFuncs += `
     static void testModel${model}() {
         try {
             byte[] data = java.nio.file.Files.readAllBytes(java.nio.file.Path.of(vecDir, "${model}.msgpack"));
             MsgPackReader r = new MsgPackReader(data);
-            var obj = ${outerClass}.${model}Codec.decode().decode(r);
+            var obj = ${outerClass}.${codecName}Codec.decode().decode(r);
             MsgPackWriter w = new MsgPackWriter();
-            ${outerClass}.${model}Codec.encode().encode(w, obj);
+            ${outerClass}.${codecName}Codec.encode().encode(w, obj);
             java.nio.file.Files.createDirectories(java.nio.file.Path.of(outDir));
             java.nio.file.Files.write(java.nio.file.Path.of(outDir, "${model}.msgpack"), w.toBytes());
             passed++;
@@ -131,9 +146,9 @@ for (const [ns, nsModels] of Object.entries(nsGroups)) {
         try {
             byte[] data = java.nio.file.Files.readAllBytes(java.nio.file.Path.of(vecDir, "${model}.json"));
             JsonReader r = new JsonReader(data);
-            var obj = ${outerClass}.${model}Codec.decode().decode(r);
+            var obj = ${outerClass}.${codecName}Codec.decode().decode(r);
             JsonWriter w = new JsonWriter();
-            ${outerClass}.${model}Codec.encode().encode(w, obj);
+            ${outerClass}.${codecName}Codec.encode().encode(w, obj);
             java.nio.file.Files.createDirectories(java.nio.file.Path.of(outDir));
             java.nio.file.Files.write(java.nio.file.Path.of(outDir, "${model}.json"), w.toBytes());
             passed++;
@@ -141,9 +156,9 @@ for (const [ns, nsModels] of Object.entries(nsGroups)) {
         try {
             byte[] data = java.nio.file.Files.readAllBytes(java.nio.file.Path.of(vecDir, "${model}.unformatted.json"));
             JsonReader r = new JsonReader(data);
-            var obj = ${outerClass}.${model}Codec.decode().decode(r);
+            var obj = ${outerClass}.${codecName}Codec.decode().decode(r);
             JsonWriter w = new JsonWriter();
-            ${outerClass}.${model}Codec.encode().encode(w, obj);
+            ${outerClass}.${codecName}Codec.encode().encode(w, obj);
             java.nio.file.Files.createDirectories(java.nio.file.Path.of(outDir));
             java.nio.file.Files.write(java.nio.file.Path.of(outDir, "${model}.unformatted.json"), w.toBytes());
             passed++;
@@ -151,9 +166,9 @@ for (const [ns, nsModels] of Object.entries(nsGroups)) {
         try {
             byte[] data = java.nio.file.Files.readAllBytes(java.nio.file.Path.of(vecDir, "${model}.gron"));
             GronReader r = new GronReader(data);
-            var obj = ${outerClass}.${model}Codec.decode().decode(r);
+            var obj = ${outerClass}.${codecName}Codec.decode().decode(r);
             GronWriter w = new GronWriter();
-            ${outerClass}.${model}Codec.encode().encode(w, obj);
+            ${outerClass}.${codecName}Codec.encode().encode(w, obj);
             java.nio.file.Files.createDirectories(java.nio.file.Path.of(outDir));
             java.nio.file.Files.write(java.nio.file.Path.of(outDir, "${model}.gron"), w.toBytes());
             passed++;
