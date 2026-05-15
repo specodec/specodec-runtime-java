@@ -27,8 +27,8 @@ public class AllTypesUnionsTypes {
     );
 
     public static UnionFieldHolder readUnionFieldHolder(SpecReader r) {
-        Shape shapeVal = null;
-        Ident idVal = null;
+        Shape shapeVal = new Shape.ShapeUndefined();
+        Ident idVal = new Ident.IdentUndefined();
         r.beginObject();
         while (r.hasNextField()) {
             switch (r.readFieldName()) {
@@ -143,8 +143,8 @@ public class AllTypesUnionsTypes {
     );
 
     public static UnionMixedHolder readUnionMixedHolder(SpecReader r) {
-        ResultMsg resultVal = null;
-        Tagged tagVal = null;
+        ResultMsg resultVal = new ResultMsg.ResultMsgUndefined();
+        Tagged tagVal = new Tagged.TaggedUndefined();
         int countVal = 0;
         r.beginObject();
         while (r.hasNextField()) {
@@ -185,8 +185,8 @@ public class AllTypesUnionsTypes {
     );
 
     public static UnionScalarHolder readUnionScalarHolder(SpecReader r) {
-        Ident idVal = null;
-        ScalarUnion scVal = null;
+        Ident idVal = new Ident.IdentUndefined();
+        ScalarUnion scVal = new ScalarUnion.ScalarUnionUndefined();
         String labelVal = "";
         r.beginObject();
         while (r.hasNextField()) {
@@ -207,26 +207,28 @@ public class AllTypesUnionsTypes {
         return new UnionScalarHolder(idVal, scVal, labelVal);
     }
 
-    public sealed interface Shape permits Shape.CircleV, Shape.RectV {
-        public record CircleV(AllTypesTypes.Coord value) implements Shape {}
-        public record RectV(AllTypesTypes.Range32 value) implements Shape {}
+    public sealed interface Shape permits Shape.ShapeCircle, Shape.ShapeRect, Shape.ShapeUndefined {
+        public record ShapeCircle(AllTypesTypes.Coord value) implements Shape {}
+        public record ShapeRect(AllTypesTypes.Range32 value) implements Shape {}
+        public record ShapeUndefined() implements Shape {}
 
-        static void writeShape(SpecWriter w, Shape obj) {
+        public static void writeShape(SpecWriter w, Shape obj) {
             w.beginObject(1);
             switch (obj) {
-                case Shape.CircleV v -> { w.writeField("circle"); AllTypesTypes.CoordCodec.encode().encode(w, v.value()); }
-                case Shape.RectV v -> { w.writeField("rect"); AllTypesTypes.Range32Codec.encode().encode(w, v.value()); }
+                case Shape.ShapeCircle v -> { w.writeField("circle"); AllTypesTypes.CoordCodec.encode().encode(w, v.value()); }
+                case Shape.ShapeRect v -> { w.writeField("rect"); AllTypesTypes.Range32Codec.encode().encode(w, v.value()); }
+                default -> throw new RuntimeException("cannot encode Undefined for Shape");
             }
             w.endObject();
         }
 
-        static Shape readShape(SpecReader r) {
+        public static Shape readShape(SpecReader r) {
             r.beginObject();
             if (!r.hasNextField()) { r.endObject(); throw new RuntimeException("empty union"); }
             String field = r.readFieldName();
             Shape result = switch (field) {
-                case "circle" -> new Shape.CircleV(AllTypesTypes.CoordCodec.decode().decode(r));
-                case "rect" -> new Shape.RectV(AllTypesTypes.Range32Codec.decode().decode(r));
+                case "circle" -> new Shape.ShapeCircle(AllTypesTypes.CoordCodec.decode().decode(r));
+                case "rect" -> new Shape.ShapeRect(AllTypesTypes.Range32Codec.decode().decode(r));
                 default -> throw new RuntimeException("unknown variant " + field);
             };
             while (r.hasNextField()) { r.readFieldName(); r.skip(); }
@@ -239,26 +241,28 @@ public class AllTypesUnionsTypes {
         Shape::writeShape,
         Shape::readShape
     );
-    public sealed interface Ident permits Ident.NameV, Ident.NumberV {
-        public record NameV(String value) implements Ident {}
-        public record NumberV(int value) implements Ident {}
+    public sealed interface Ident permits Ident.IdentName, Ident.IdentNumber, Ident.IdentUndefined {
+        public record IdentName(String value) implements Ident {}
+        public record IdentNumber(int value) implements Ident {}
+        public record IdentUndefined() implements Ident {}
 
-        static void writeIdent(SpecWriter w, Ident obj) {
+        public static void writeIdent(SpecWriter w, Ident obj) {
             w.beginObject(1);
             switch (obj) {
-                case Ident.NameV v -> { w.writeField("name"); w.writeString(v.value()); }
-                case Ident.NumberV v -> { w.writeField("number"); w.writeInt32(v.value()); }
+                case Ident.IdentName v -> { w.writeField("name"); w.writeString(v.value()); }
+                case Ident.IdentNumber v -> { w.writeField("number"); w.writeInt32(v.value()); }
+                default -> throw new RuntimeException("cannot encode Undefined for Ident");
             }
             w.endObject();
         }
 
-        static Ident readIdent(SpecReader r) {
+        public static Ident readIdent(SpecReader r) {
             r.beginObject();
             if (!r.hasNextField()) { r.endObject(); throw new RuntimeException("empty union"); }
             String field = r.readFieldName();
             Ident result = switch (field) {
-                case "name" -> new Ident.NameV(r.readString());
-                case "number" -> new Ident.NumberV(r.readInt32());
+                case "name" -> new Ident.IdentName(r.readString());
+                case "number" -> new Ident.IdentNumber(r.readInt32());
                 default -> throw new RuntimeException("unknown variant " + field);
             };
             while (r.hasNextField()) { r.readFieldName(); r.skip(); }
@@ -271,26 +275,28 @@ public class AllTypesUnionsTypes {
         Ident::writeIdent,
         Ident::readIdent
     );
-    public sealed interface ResultMsg permits ResultMsg.OkV, ResultMsg.ErrV {
-        public record OkV(String value) implements ResultMsg {}
-        public record ErrV(AllTypesTypes.Label value) implements ResultMsg {}
+    public sealed interface ResultMsg permits ResultMsg.ResultMsgOk, ResultMsg.ResultMsgErr, ResultMsg.ResultMsgUndefined {
+        public record ResultMsgOk(String value) implements ResultMsg {}
+        public record ResultMsgErr(AllTypesTypes.Label value) implements ResultMsg {}
+        public record ResultMsgUndefined() implements ResultMsg {}
 
-        static void writeResultMsg(SpecWriter w, ResultMsg obj) {
+        public static void writeResultMsg(SpecWriter w, ResultMsg obj) {
             w.beginObject(1);
             switch (obj) {
-                case ResultMsg.OkV v -> { w.writeField("ok"); w.writeString(v.value()); }
-                case ResultMsg.ErrV v -> { w.writeField("err"); AllTypesTypes.LabelCodec.encode().encode(w, v.value()); }
+                case ResultMsg.ResultMsgOk v -> { w.writeField("ok"); w.writeString(v.value()); }
+                case ResultMsg.ResultMsgErr v -> { w.writeField("err"); AllTypesTypes.LabelCodec.encode().encode(w, v.value()); }
+                default -> throw new RuntimeException("cannot encode Undefined for ResultMsg");
             }
             w.endObject();
         }
 
-        static ResultMsg readResultMsg(SpecReader r) {
+        public static ResultMsg readResultMsg(SpecReader r) {
             r.beginObject();
             if (!r.hasNextField()) { r.endObject(); throw new RuntimeException("empty union"); }
             String field = r.readFieldName();
             ResultMsg result = switch (field) {
-                case "ok" -> new ResultMsg.OkV(r.readString());
-                case "err" -> new ResultMsg.ErrV(AllTypesTypes.LabelCodec.decode().decode(r));
+                case "ok" -> new ResultMsg.ResultMsgOk(r.readString());
+                case "err" -> new ResultMsg.ResultMsgErr(AllTypesTypes.LabelCodec.decode().decode(r));
                 default -> throw new RuntimeException("unknown variant " + field);
             };
             while (r.hasNextField()) { r.readFieldName(); r.skip(); }
@@ -303,29 +309,31 @@ public class AllTypesUnionsTypes {
         ResultMsg::writeResultMsg,
         ResultMsg::readResultMsg
     );
-    public sealed interface Tagged permits Tagged.TagV, Tagged.ScoreV, Tagged.ActiveV {
-        public record TagV(String value) implements Tagged {}
-        public record ScoreV(double value) implements Tagged {}
-        public record ActiveV(boolean value) implements Tagged {}
+    public sealed interface Tagged permits Tagged.TaggedTag, Tagged.TaggedScore, Tagged.TaggedActive, Tagged.TaggedUndefined {
+        public record TaggedTag(String value) implements Tagged {}
+        public record TaggedScore(double value) implements Tagged {}
+        public record TaggedActive(boolean value) implements Tagged {}
+        public record TaggedUndefined() implements Tagged {}
 
-        static void writeTagged(SpecWriter w, Tagged obj) {
+        public static void writeTagged(SpecWriter w, Tagged obj) {
             w.beginObject(1);
             switch (obj) {
-                case Tagged.TagV v -> { w.writeField("tag"); w.writeString(v.value()); }
-                case Tagged.ScoreV v -> { w.writeField("score"); w.writeFloat64(v.value()); }
-                case Tagged.ActiveV v -> { w.writeField("active"); w.writeBool(v.value()); }
+                case Tagged.TaggedTag v -> { w.writeField("tag"); w.writeString(v.value()); }
+                case Tagged.TaggedScore v -> { w.writeField("score"); w.writeFloat64(v.value()); }
+                case Tagged.TaggedActive v -> { w.writeField("active"); w.writeBool(v.value()); }
+                default -> throw new RuntimeException("cannot encode Undefined for Tagged");
             }
             w.endObject();
         }
 
-        static Tagged readTagged(SpecReader r) {
+        public static Tagged readTagged(SpecReader r) {
             r.beginObject();
             if (!r.hasNextField()) { r.endObject(); throw new RuntimeException("empty union"); }
             String field = r.readFieldName();
             Tagged result = switch (field) {
-                case "tag" -> new Tagged.TagV(r.readString());
-                case "score" -> new Tagged.ScoreV(r.readFloat64());
-                case "active" -> new Tagged.ActiveV(r.readBool());
+                case "tag" -> new Tagged.TaggedTag(r.readString());
+                case "score" -> new Tagged.TaggedScore(r.readFloat64());
+                case "active" -> new Tagged.TaggedActive(r.readBool());
                 default -> throw new RuntimeException("unknown variant " + field);
             };
             while (r.hasNextField()) { r.readFieldName(); r.skip(); }
@@ -338,32 +346,34 @@ public class AllTypesUnionsTypes {
         Tagged::writeTagged,
         Tagged::readTagged
     );
-    public sealed interface ScalarUnion permits ScalarUnion.SV, ScalarUnion.IV, ScalarUnion.FV, ScalarUnion.BV {
-        public record SV(String value) implements ScalarUnion {}
-        public record IV(int value) implements ScalarUnion {}
-        public record FV(double value) implements ScalarUnion {}
-        public record BV(boolean value) implements ScalarUnion {}
+    public sealed interface ScalarUnion permits ScalarUnion.ScalarUnionS, ScalarUnion.ScalarUnionI, ScalarUnion.ScalarUnionF, ScalarUnion.ScalarUnionB, ScalarUnion.ScalarUnionUndefined {
+        public record ScalarUnionS(String value) implements ScalarUnion {}
+        public record ScalarUnionI(int value) implements ScalarUnion {}
+        public record ScalarUnionF(double value) implements ScalarUnion {}
+        public record ScalarUnionB(boolean value) implements ScalarUnion {}
+        public record ScalarUnionUndefined() implements ScalarUnion {}
 
-        static void writeScalarUnion(SpecWriter w, ScalarUnion obj) {
+        public static void writeScalarUnion(SpecWriter w, ScalarUnion obj) {
             w.beginObject(1);
             switch (obj) {
-                case ScalarUnion.SV v -> { w.writeField("s"); w.writeString(v.value()); }
-                case ScalarUnion.IV v -> { w.writeField("i"); w.writeInt32(v.value()); }
-                case ScalarUnion.FV v -> { w.writeField("f"); w.writeFloat64(v.value()); }
-                case ScalarUnion.BV v -> { w.writeField("b"); w.writeBool(v.value()); }
+                case ScalarUnion.ScalarUnionS v -> { w.writeField("s"); w.writeString(v.value()); }
+                case ScalarUnion.ScalarUnionI v -> { w.writeField("i"); w.writeInt32(v.value()); }
+                case ScalarUnion.ScalarUnionF v -> { w.writeField("f"); w.writeFloat64(v.value()); }
+                case ScalarUnion.ScalarUnionB v -> { w.writeField("b"); w.writeBool(v.value()); }
+                default -> throw new RuntimeException("cannot encode Undefined for ScalarUnion");
             }
             w.endObject();
         }
 
-        static ScalarUnion readScalarUnion(SpecReader r) {
+        public static ScalarUnion readScalarUnion(SpecReader r) {
             r.beginObject();
             if (!r.hasNextField()) { r.endObject(); throw new RuntimeException("empty union"); }
             String field = r.readFieldName();
             ScalarUnion result = switch (field) {
-                case "s" -> new ScalarUnion.SV(r.readString());
-                case "i" -> new ScalarUnion.IV(r.readInt32());
-                case "f" -> new ScalarUnion.FV(r.readFloat64());
-                case "b" -> new ScalarUnion.BV(r.readBool());
+                case "s" -> new ScalarUnion.ScalarUnionS(r.readString());
+                case "i" -> new ScalarUnion.ScalarUnionI(r.readInt32());
+                case "f" -> new ScalarUnion.ScalarUnionF(r.readFloat64());
+                case "b" -> new ScalarUnion.ScalarUnionB(r.readBool());
                 default -> throw new RuntimeException("unknown variant " + field);
             };
             while (r.hasNextField()) { r.readFieldName(); r.skip(); }
@@ -376,26 +386,28 @@ public class AllTypesUnionsTypes {
         ScalarUnion::writeScalarUnion,
         ScalarUnion::readScalarUnion
     );
-    public sealed interface OptUnionHolder permits OptUnionHolder.ShapeV, OptUnionHolder.IdV {
-        public record ShapeV(Shape value) implements OptUnionHolder {}
-        public record IdV(Ident value) implements OptUnionHolder {}
+    public sealed interface OptUnionHolder permits OptUnionHolder.OptUnionHolderShape, OptUnionHolder.OptUnionHolderId, OptUnionHolder.OptUnionHolderUndefined {
+        public record OptUnionHolderShape(Shape value) implements OptUnionHolder {}
+        public record OptUnionHolderId(Ident value) implements OptUnionHolder {}
+        public record OptUnionHolderUndefined() implements OptUnionHolder {}
 
-        static void writeOptUnionHolder(SpecWriter w, OptUnionHolder obj) {
+        public static void writeOptUnionHolder(SpecWriter w, OptUnionHolder obj) {
             w.beginObject(1);
             switch (obj) {
-                case OptUnionHolder.ShapeV v -> { w.writeField("shape"); Shape.writeShape(w, v.value()); }
-                case OptUnionHolder.IdV v -> { w.writeField("id"); Ident.writeIdent(w, v.value()); }
+                case OptUnionHolder.OptUnionHolderShape v -> { w.writeField("shape"); Shape.writeShape(w, v.value()); }
+                case OptUnionHolder.OptUnionHolderId v -> { w.writeField("id"); Ident.writeIdent(w, v.value()); }
+                default -> throw new RuntimeException("cannot encode Undefined for OptUnionHolder");
             }
             w.endObject();
         }
 
-        static OptUnionHolder readOptUnionHolder(SpecReader r) {
+        public static OptUnionHolder readOptUnionHolder(SpecReader r) {
             r.beginObject();
             if (!r.hasNextField()) { r.endObject(); throw new RuntimeException("empty union"); }
             String field = r.readFieldName();
             OptUnionHolder result = switch (field) {
-                case "shape" -> new OptUnionHolder.ShapeV(Shape.readShape(r));
-                case "id" -> new OptUnionHolder.IdV(Ident.readIdent(r));
+                case "shape" -> new OptUnionHolder.OptUnionHolderShape(Shape.readShape(r));
+                case "id" -> new OptUnionHolder.OptUnionHolderId(Ident.readIdent(r));
                 default -> throw new RuntimeException("unknown variant " + field);
             };
             while (r.hasNextField()) { r.readFieldName(); r.skip(); }
@@ -408,29 +420,31 @@ public class AllTypesUnionsTypes {
         OptUnionHolder::writeOptUnionHolder,
         OptUnionHolder::readOptUnionHolder
     );
-    public sealed interface MixedUnion permits MixedUnion.PointV, MixedUnion.LabelV, MixedUnion.CountV {
-        public record PointV(AllTypesTypes.Coord value) implements MixedUnion {}
-        public record LabelV(String value) implements MixedUnion {}
-        public record CountV(int value) implements MixedUnion {}
+    public sealed interface MixedUnion permits MixedUnion.MixedUnionPoint, MixedUnion.MixedUnionLabel, MixedUnion.MixedUnionCount, MixedUnion.MixedUnionUndefined {
+        public record MixedUnionPoint(AllTypesTypes.Coord value) implements MixedUnion {}
+        public record MixedUnionLabel(String value) implements MixedUnion {}
+        public record MixedUnionCount(int value) implements MixedUnion {}
+        public record MixedUnionUndefined() implements MixedUnion {}
 
-        static void writeMixedUnion(SpecWriter w, MixedUnion obj) {
+        public static void writeMixedUnion(SpecWriter w, MixedUnion obj) {
             w.beginObject(1);
             switch (obj) {
-                case MixedUnion.PointV v -> { w.writeField("point"); AllTypesTypes.CoordCodec.encode().encode(w, v.value()); }
-                case MixedUnion.LabelV v -> { w.writeField("label"); w.writeString(v.value()); }
-                case MixedUnion.CountV v -> { w.writeField("count"); w.writeInt32(v.value()); }
+                case MixedUnion.MixedUnionPoint v -> { w.writeField("point"); AllTypesTypes.CoordCodec.encode().encode(w, v.value()); }
+                case MixedUnion.MixedUnionLabel v -> { w.writeField("label"); w.writeString(v.value()); }
+                case MixedUnion.MixedUnionCount v -> { w.writeField("count"); w.writeInt32(v.value()); }
+                default -> throw new RuntimeException("cannot encode Undefined for MixedUnion");
             }
             w.endObject();
         }
 
-        static MixedUnion readMixedUnion(SpecReader r) {
+        public static MixedUnion readMixedUnion(SpecReader r) {
             r.beginObject();
             if (!r.hasNextField()) { r.endObject(); throw new RuntimeException("empty union"); }
             String field = r.readFieldName();
             MixedUnion result = switch (field) {
-                case "point" -> new MixedUnion.PointV(AllTypesTypes.CoordCodec.decode().decode(r));
-                case "label" -> new MixedUnion.LabelV(r.readString());
-                case "count" -> new MixedUnion.CountV(r.readInt32());
+                case "point" -> new MixedUnion.MixedUnionPoint(AllTypesTypes.CoordCodec.decode().decode(r));
+                case "label" -> new MixedUnion.MixedUnionLabel(r.readString());
+                case "count" -> new MixedUnion.MixedUnionCount(r.readInt32());
                 default -> throw new RuntimeException("unknown variant " + field);
             };
             while (r.hasNextField()) { r.readFieldName(); r.skip(); }
@@ -443,26 +457,28 @@ public class AllTypesUnionsTypes {
         MixedUnion::writeMixedUnion,
         MixedUnion::readMixedUnion
     );
-    public sealed interface NestedUnion permits NestedUnion.ResultV, NestedUnion.ShapeV {
-        public record ResultV(ResultMsg value) implements NestedUnion {}
-        public record ShapeV(Shape value) implements NestedUnion {}
+    public sealed interface NestedUnion permits NestedUnion.NestedUnionResult, NestedUnion.NestedUnionShape, NestedUnion.NestedUnionUndefined {
+        public record NestedUnionResult(ResultMsg value) implements NestedUnion {}
+        public record NestedUnionShape(Shape value) implements NestedUnion {}
+        public record NestedUnionUndefined() implements NestedUnion {}
 
-        static void writeNestedUnion(SpecWriter w, NestedUnion obj) {
+        public static void writeNestedUnion(SpecWriter w, NestedUnion obj) {
             w.beginObject(1);
             switch (obj) {
-                case NestedUnion.ResultV v -> { w.writeField("result"); ResultMsg.writeResultMsg(w, v.value()); }
-                case NestedUnion.ShapeV v -> { w.writeField("shape"); Shape.writeShape(w, v.value()); }
+                case NestedUnion.NestedUnionResult v -> { w.writeField("result"); ResultMsg.writeResultMsg(w, v.value()); }
+                case NestedUnion.NestedUnionShape v -> { w.writeField("shape"); Shape.writeShape(w, v.value()); }
+                default -> throw new RuntimeException("cannot encode Undefined for NestedUnion");
             }
             w.endObject();
         }
 
-        static NestedUnion readNestedUnion(SpecReader r) {
+        public static NestedUnion readNestedUnion(SpecReader r) {
             r.beginObject();
             if (!r.hasNextField()) { r.endObject(); throw new RuntimeException("empty union"); }
             String field = r.readFieldName();
             NestedUnion result = switch (field) {
-                case "result" -> new NestedUnion.ResultV(ResultMsg.readResultMsg(r));
-                case "shape" -> new NestedUnion.ShapeV(Shape.readShape(r));
+                case "result" -> new NestedUnion.NestedUnionResult(ResultMsg.readResultMsg(r));
+                case "shape" -> new NestedUnion.NestedUnionShape(Shape.readShape(r));
                 default -> throw new RuntimeException("unknown variant " + field);
             };
             while (r.hasNextField()) { r.readFieldName(); r.skip(); }

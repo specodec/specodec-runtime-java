@@ -1,0 +1,11 @@
+.tests-cache/
+node_modules/
+output/
+src/generated/
+emit_gen/
+*.class
+.gradle/
+.gradle/
+build/
+*.jar
+tsp-output/

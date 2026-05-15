@@ -3,7 +3,7 @@ plugins {
     id 'maven-publish'
 }
 group = 'io.specodec'
-version = '0.0.1'
+version = '1.0.0'
 repositories { mavenCentral() }
 java {
     sourceCompatibility = JavaVersion.VERSION_21

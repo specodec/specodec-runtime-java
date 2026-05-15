@@ -38,10 +38,11 @@ const srcDir = join(__dir, 'emit', 'src', 'main', 'java');
 if (!existsSync(srcDir)) mkdirSync(srcDir, { recursive: true });
 run(`VEC_DIR=${VEC_DIR} node generate_emit_runner.mjs`);
 
-console.log('\n=== Step 6: Build runtime jar ===');
-const javaDir = join(__dir, '..', '..');
-run(`cd ${javaDir} && gradle jar --no-daemon -q`);
-const jar = `${javaDir}/build/libs/specodec-java-0.0.1.jar`;
+console.log('\n=== Step 6: Fetch runtime from Forgejo Maven ===');
+const forgejoBase = "http://10.199.64.20:3000/api/packages/specodec/maven";
+const jarUrl = `${forgejoBase}/io/specodec/specodec-runtime-java/1.0.0/specodec-java-1.0.0.jar`;
+run(`curl -sfL -o /tmp/specodec-java-1.0.0.jar "${jarUrl}"`);
+const jar = "/tmp/specodec-java-1.0.0.jar"
 const emitDir = join(__dir, 'emit');
 mkdirSync(emitDir, { recursive: true });
 execSync(`cp ${jar} ${emitDir}/runtime.jar`, { stdio: 'inherit' });

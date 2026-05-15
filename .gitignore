@@ -13,3 +13,5 @@ __pycache__/
 .kotlin/
 !gradle-wrapper.jar
 .npmrc
+*.class
+build/
