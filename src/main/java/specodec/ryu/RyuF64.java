@@ -55,7 +55,7 @@ public final class RyuF64 {
         if (e2 >= 0) {
             int q = RyuMath.log10Pow2(e2);
             e10 = q;
-            int k = DOUBLE_POW5_INV_BITCOUNT + RyuMath.pow5bits(q) - 1;
+            int k = DOUBLE_POW5_INV_BITCOUNT + RyuMath.pow5Bits(q) - 1;
             int i = -e2 + q + k;
 
             vr = RyuMath.mulShift64(mv, TablesF64.DOUBLE_POW5_INV_SPLIT[q], i);
@@ -63,7 +63,7 @@ public final class RyuF64 {
             vm = RyuMath.mulShift64(mm, TablesF64.DOUBLE_POW5_INV_SPLIT[q], i);
 
             if (q != 0 && Long.divideUnsigned(vp - 1L, 10L) <= Long.divideUnsigned(vm, 10L)) {
-                int l = DOUBLE_POW5_INV_BITCOUNT + RyuMath.pow5bits(q - 1) - 1;
+                int l = DOUBLE_POW5_INV_BITCOUNT + RyuMath.pow5Bits(q - 1) - 1;
                 lastDigit = RyuMath.mulShift64(mv, TablesF64.DOUBLE_POW5_INV_SPLIT[q - 1], -e2 + q - 1 + l) % 10L;
             }
 
@@ -82,7 +82,7 @@ public final class RyuF64 {
             int q = RyuMath.log10Pow5(-e2);
             e10 = q + e2;
             int i = -e2 - q;
-            int k = RyuMath.pow5bits(i) - DOUBLE_POW5_BITCOUNT;
+            int k = RyuMath.pow5Bits(i) - DOUBLE_POW5_BITCOUNT;
             int j = q - k;
 
             vr = RyuMath.mulShift64(mv, TablesF64.DOUBLE_POW5_SPLIT[i], j);
@@ -90,7 +90,7 @@ public final class RyuF64 {
             vm = RyuMath.mulShift64(mm, TablesF64.DOUBLE_POW5_SPLIT[i], j);
 
             if (q != 0 && Long.divideUnsigned(vp - 1L, 10L) <= Long.divideUnsigned(vm, 10L)) {
-                int j2 = q - 1 - (RyuMath.pow5bits(i + 1) - DOUBLE_POW5_BITCOUNT);
+                int j2 = q - 1 - (RyuMath.pow5Bits(i + 1) - DOUBLE_POW5_BITCOUNT);
                 lastDigit = RyuMath.mulShift64(mv, TablesF64.DOUBLE_POW5_SPLIT[i + 1], j2) % 10L;
             }
 

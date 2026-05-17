@@ -1,7 +1,7 @@
 package specodec.ryu;
 
 public final class RyuMath {
-    public static int pow5bits(int e) { return e * 1217359 / 524288 + 1; }
+    public static int pow5Bits(int e) { return e * 1217359 / 524288 + 1; }
 
     public static int log10Pow2(int e) { return e * 78913 / 262144; }
 
