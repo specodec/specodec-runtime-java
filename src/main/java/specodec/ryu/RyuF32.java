@@ -70,10 +70,10 @@ public final class RyuF32 {
             if (q <= 9) {
                 if (mv % 5L == 0L) {
                     vrIsTrailingZeros = RyuMath.multipleOfPowerOf5_32((int) (mv & 0xFFFFFFFFL), q);
+                } else if (acceptBounds) {
                     vmIsTrailingZeros = RyuMath.multipleOfPowerOf5_32((int) (mm & 0xFFFFFFFFL), q);
-                    if (RyuMath.multipleOfPowerOf5_32((int) (mp & 0xFFFFFFFFL), q)) {
-                        vp--;
-                    }
+                } else if (RyuMath.multipleOfPowerOf5_32((int) (mp & 0xFFFFFFFFL), q)) {
+                    vp--;
                 }
             }
         } else {
