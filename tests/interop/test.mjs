@@ -4,7 +4,7 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
-const CACHE = join(__dir, '.tests-cache');
+const VEC_DIR = join(__dir, "vectors");
 const EMIT_GEN = join(__dir, 'emit_gen');
 const OUT_DIR = join(__dir, 'output');
 
@@ -19,16 +19,12 @@ function sh(cmd) {
 console.log('\n=== Step 1: Install dependencies ===');
 run(`npm install`);
 
-console.log('\n=== Step 2: Using cached .tests-cache ===');
 
-console.log('\n=== Step 3: Generate vectors ===');
-run(`cd ${CACHE} && npm install --silent && node gen_types.mjs`);
-const VEC_DIR = join(CACHE, 'vectors');
 
 console.log('\n=== Step 4: Generate emit code ===');
 if (existsSync(EMIT_GEN)) rmSync(EMIT_GEN, { recursive: true });
 mkdirSync(EMIT_GEN, { recursive: true });
-run(`npx tsp compile ${CACHE}/alltypes.tsp --emit=@specodec/typespec-emitter-java --option @specodec/typespec-emitter-java.emitter-output-dir=${EMIT_GEN}`);
+run(`npx tsp compile ${__dir}/alltypes.tsp --emit=@specodec/typespec-emitter-java --option @specodec/typespec-emitter-java.emitter-output-dir=${EMIT_GEN}`);
 
 const javaFiles = readdirSync(EMIT_GEN, { recursive: true }).filter(f => f.endsWith('.java'));
 console.log(`  Generated ${javaFiles.length} Java files`);
@@ -39,7 +35,7 @@ if (!existsSync(srcDir)) mkdirSync(srcDir, { recursive: true });
 run(`VEC_DIR=${VEC_DIR} node generate_emit_runner.mjs`);
 
 console.log('\n=== Step 6: Fetch runtime from Forgejo Maven ===');
-const forgejoBase = "http://10.199.64.20:3000/api/packages/specodec/maven";
+const forgejoBase = "http://10.199.64.20:30000/api/packages/specodec/maven";
 const jarUrl = `${forgejoBase}/io/specodec/specodec-runtime-java/1.0.0/specodec-java-1.0.0.jar`;
 run(`curl -sfL -o /tmp/specodec-java-1.0.0.jar "${jarUrl}"`);
 const jar = "/tmp/specodec-java-1.0.0.jar"
